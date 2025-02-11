@@ -1,13 +1,10 @@
 'use client'
 
-import { Suspense } from 'react';
-import DashboardLayout from '@/components/layout/DashboardLayout';
-import ToolGrid from '@/components/tools/ToolGrid';
-import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/components/providers/AuthProvider'
 import { client } from '@/lib/sanity'
 import ToolCard from '@/components/tools/ToolCard'
+import DashboardLayout from '@/components/layout/DashboardLayout'
 
 interface Tool {
   _id: string;
@@ -16,6 +13,12 @@ interface Tool {
   url: string;
   category: string;
   platforms: string[];
+}
+
+interface UserRole {
+  _id: string;
+  key: string;
+  name: string;
 }
 
 export default function DashboardPage() {
@@ -47,7 +50,7 @@ export default function DashboardPage() {
           "category": requiredRoles[0]->.name,
           platforms
         }
-      `, { userRoles: userData.roles.map((role: any) => role._id) })
+      `, { userRoles: userData.roles.map((role: UserRole) => role._id) })
 
       setTools(userTools)
     }

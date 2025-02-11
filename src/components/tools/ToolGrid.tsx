@@ -1,9 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import ToolCard from './ToolCard';
-import { client } from '@/lib/sanity';
-import { useAuth } from '@/components/providers/AuthProvider';
 
 interface Tool {
   _id: string;

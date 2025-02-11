@@ -13,8 +13,10 @@ export function SignInForm() {
     e.preventDefault();
     try {
       await signIn(email, password);
-    } catch (error: any) {
-      setError(error.message);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setError(error.message);
+      }
     }
   };
 

@@ -1,4 +1,3 @@
-import Image from 'next/image';
 import Link from 'next/link';
 import { Monitor, Smartphone, Tablet } from 'lucide-react'
 
