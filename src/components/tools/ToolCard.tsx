@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Monitor, Smartphone, Tablet } from 'lucide-react'
+import { Monitor, Smartphone, Tablet, Layout } from 'lucide-react'
 
 interface Tool {
   name: string;
@@ -34,7 +34,7 @@ export default function ToolCard({ tool }: ToolCardProps) {
       <div className="p-6">
         <div className="flex items-center mb-4">
           <div className="w-12 h-12 bg-gray-100 rounded-md mr-4 flex items-center justify-center">
-            <Monitor className="w-6 h-6 text-gray-600" />
+            <Layout className="w-6 h-6 text-gray-600" />
           </div>
           <div>
             <h3 className="text-lg font-semibold text-gray-900">{tool.name}</h3>

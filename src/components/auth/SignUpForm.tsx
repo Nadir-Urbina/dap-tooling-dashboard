@@ -95,7 +95,7 @@ export function SignUpForm() {
 
       <button
         type="submit"
-        className="w-full bg-green-500 text-white rounded-md px-4 py-2 hover:bg-green-600"
+        className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#1a1a1a] hover:bg-[#333333] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1a1a1a] transition-colors duration-200"
       >
         Sign Up
       </button>

@@ -5,18 +5,20 @@ import {
   User,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
-  signOut as firebaseSignOut 
+  signOut as firebaseSignOut,
+  sendPasswordResetEmail
 } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { client } from '@/lib/sanity';
 
 interface AuthContextType {
-  user: User | null;
-  loading: boolean;
-  signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string) => Promise<void>;
-  signOut: () => Promise<void>;
-}
+    user: User | null
+    loading: boolean
+    signIn: (email: string, password: string) => Promise<void>
+    signUp: (email: string, password: string) => Promise<void>
+    signOut: () => Promise<void>
+    resetPassword: (email: string) => Promise<void>
+  }
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 
@@ -95,6 +97,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const resetPassword = async (email: string) => {
+    await sendPasswordResetEmail(auth, email);
+  };
+
   return (
     <AuthContext.Provider value={{
       user,
@@ -102,6 +108,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       signIn,
       signUp,
       signOut,
+      resetPassword
     }}>
       {children}
     </AuthContext.Provider>
