@@ -54,7 +54,11 @@ export default function Home() {
           </button>
         </div>
         <div className="bg-white rounded-lg">
-          {isSignIn ? <SignInForm /> : <SignUpForm />}
+          {isSignIn ? (
+            <SignInForm />
+          ) : (
+            <SignUpForm onBackToSignIn={() => setIsSignIn(true)} />
+          )}
         </div>
       </div>
       <div className="mt-8 text-white text-sm text-center">

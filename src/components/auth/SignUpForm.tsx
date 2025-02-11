@@ -2,14 +2,16 @@
 
 import { useState } from 'react';
 import { useAuth } from '@/components/providers/AuthProvider';
+import { RegistrationSuccess } from './RegistrationSuccess';
 
 const ALLOWED_DOMAINS = ['duvalasphalt.com', 'ats.consulting'];
 
-export function SignUpForm() {
+export function SignUpForm({ onBackToSignIn }: { onBackToSignIn: () => void }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
+  const [isSuccess, setIsSuccess] = useState(false);
   const { signUp } = useAuth();
 
   const isAllowedDomain = (email: string) => {
@@ -33,6 +35,8 @@ export function SignUpForm() {
 
     try {
       await signUp(email, password);
+      setIsSuccess(true);
+      setError('');
     } catch (error: unknown) {
       if (error instanceof Error) {
         setError(error.message);
@@ -40,8 +44,15 @@ export function SignUpForm() {
     }
   };
 
+  if (isSuccess) {
+    return <RegistrationSuccess email={email} onBackToSignIn={onBackToSignIn} />;
+  }
+
   return (
     <form onSubmit={handleSubmit} className="space-y-4 max-w-sm mx-auto">
+      {error && (
+        <div className="text-red-500 text-sm">{error}</div>
+      )}
       <div>
         <label htmlFor="email" className="block text-sm font-medium text-gray-700">
           Email
@@ -86,12 +97,6 @@ export function SignUpForm() {
           required
         />
       </div>
-
-      {error && (
-        <div className="text-red-500 text-sm">
-          {error}
-        </div>
-      )}
 
       <button
         type="submit"

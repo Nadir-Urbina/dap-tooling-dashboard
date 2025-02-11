@@ -6,35 +6,48 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut as firebaseSignOut,
-  sendPasswordResetEmail
+  sendEmailVerification,
+  sendPasswordResetEmail,
+  onAuthStateChanged
 } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { client } from '@/lib/sanity';
+import { useRouter } from 'next/navigation';
 
 interface AuthContextType {
     user: User | null
     loading: boolean
     signIn: (email: string, password: string) => Promise<void>
-    signUp: (email: string, password: string) => Promise<void>
+    signUp: (email: string, password: string) => Promise<{ success: boolean; message: string }>
     signOut: () => Promise<void>
     resetPassword: (email: string) => Promise<void>
   }
 
-const AuthContext = createContext<AuthContextType>({} as AuthContextType);
+const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((user) => {
-      console.log('Auth state changed:', user);
-      setUser(user);
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        // Only set the user if email is verified
+        if (user.emailVerified) {
+          setUser(user);
+        } else {
+          await signOut();
+          router.push('/');
+        }
+      } else {
+        setUser(null);
+      }
       setLoading(false);
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [router]);
 
   const createSanityUser = async (user: User) => {
     try {
@@ -70,31 +83,73 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signIn = async (email: string, password: string) => {
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
-    } catch (error) {
-      console.error('Sign in error:', error);
-      throw error;
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    
+    if (!userCredential.user.emailVerified) {
+      await signOut();
+      throw new Error('Please verify your email before signing in.');
     }
+    
+    setUser(userCredential.user);
   };
 
   const signUp = async (email: string, password: string) => {
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      await createSanityUser(userCredential.user);
+      // Create Firebase user first
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password)
+      
+      // Send verification email
+      await sendEmailVerification(userCredential.user)
+      
+      try {
+        // Updated query to match exact role name and key
+        const basicRole = await client.fetch(`
+          *[_type == "role" && (name == "basic" || key == "basic")][0]{
+            _id,
+            name,
+            key
+          }
+        `)
+
+        console.log('Found role:', basicRole)
+
+        if (!basicRole) {
+          console.error('Basic role not found in Sanity')
+        } else {
+          // Create user in Sanity with basic role and name
+          const newUser = await client.create({
+            _type: 'user',
+            name: email,
+            email: email,
+            firebaseId: userCredential.user.uid,
+            roles: [{
+              _type: 'reference',
+              _ref: basicRole._id
+            }]
+          })
+
+          console.log('Created user with role:', newUser)
+        }
+      } catch (sanityError) {
+        console.error('Error creating Sanity user:', sanityError)
+      }
+
+      // Sign out immediately after registration
+      await signOut()
+      
+      return {
+        success: true,
+        message: 'Registration successful! Please check your email to verify your account.'
+      }
     } catch (error) {
-      console.error('Sign up error:', error);
-      throw error;
+      throw error
     }
-  };
+  }
 
   const signOut = async () => {
-    try {
-      await firebaseSignOut(auth);
-    } catch (error) {
-      console.error('Sign out error:', error);
-      throw error;
-    }
+    await firebaseSignOut(auth);
+    setUser(null);
+    router.push('/');
   };
 
   const resetPassword = async (email: string) => {
@@ -115,4 +170,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-export const useAuth = () => useContext(AuthContext); 
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+}; 
