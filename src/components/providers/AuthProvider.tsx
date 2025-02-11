@@ -30,10 +30,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
+  const signOut = async () => {
+    await firebaseSignOut(auth);
+    setUser(null);
+    router.push('/');
+  };
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        // Only set the user if email is verified
         if (user.emailVerified) {
           setUser(user);
         } else {
@@ -47,40 +52,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     return () => unsubscribe();
-  }, [router]);
-
-  const createSanityUser = async (user: User) => {
-    try {
-      console.log('Sanity Token:', process.env.SANITY_API_TOKEN?.slice(0, 5) + '...');  // Only log first 5 chars
-      // First, get or create the basic role
-      let basicRole = await client.fetch('*[_type == "role" && name == "basic"][0]');
-      
-      if (!basicRole) {
-        basicRole = await client.create({
-          _type: 'role',
-          name: 'basic',
-          description: 'Basic user role with limited permissions'
-        });
-      }
-
-      // Create user with reference to basic role
-      await client.create({
-        _type: 'user',
-        email: user.email,
-        firebaseId: user.uid,
-        name: user.email?.split('@')[0] || 'Unknown',
-        lastLogin: new Date().toISOString(),
-        roles: [{
-          _type: 'reference',
-          _ref: basicRole._id
-        }]
-      });
-    } catch (error) {
-      console.error('Error creating Sanity user:', error);
-      await user.delete();
-      throw new Error('Failed to complete user registration');
-    }
-  };
+  }, [router, signOut]);
 
   const signIn = async (email: string, password: string) => {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
@@ -145,12 +117,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       throw error
     }
   }
-
-  const signOut = async () => {
-    await firebaseSignOut(auth);
-    setUser(null);
-    router.push('/');
-  };
 
   const resetPassword = async (email: string) => {
     await sendPasswordResetEmail(auth, email);

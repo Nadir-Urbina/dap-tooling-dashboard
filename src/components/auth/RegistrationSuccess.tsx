@@ -29,7 +29,7 @@ export function RegistrationSuccess({
           Check your email
         </h2>
         <p className="text-gray-600 mb-6">
-          We've sent a verification email to:
+          We&apos;ve sent a verification email to:
           <br />
           <span className="font-medium text-gray-900">{email}</span>
         </p>
