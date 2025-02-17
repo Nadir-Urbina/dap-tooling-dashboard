@@ -29,7 +29,9 @@ export default function ToolCard({ tool }: ToolCardProps) {
     <Link
       href={tool.url}
       target="_blank"
-      className="block bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200"
+      className="block bg-white rounded-lg shadow-md 
+                transform transition-all duration-300 ease-in-out
+                hover:shadow-xl hover:-translate-y-1 hover:scale-[1.02]"
     >
       <div className="p-6">
         <div className="flex items-center mb-4">
