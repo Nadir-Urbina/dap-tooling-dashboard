@@ -1,8 +1,8 @@
 'use client';
 
-import Link from 'next/link';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 export default function Navbar() {
   const { user, signOut } = useAuth();
@@ -21,9 +21,11 @@ export default function Navbar() {
     <nav className="bg-black text-white shadow-md">
       <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
         <div className="flex items-center space-x-2">
-          <img 
+          <Image 
             src="/duval-logo.png" 
             alt="Duval Asphalt" 
+            width={32}
+            height={32}
             className="h-8"
           />
           <h1 className="text-2xl font-bold">DAP Tools</h1>

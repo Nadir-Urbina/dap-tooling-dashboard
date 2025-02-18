@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { 
   User,
   createUserWithEmailAndPassword,
@@ -30,11 +30,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  const signOut = async () => {
-    await firebaseSignOut(auth);
-    setUser(null);
-    router.push('/');
-  };
+  const signOut = useCallback(async () => {
+    try {
+      await auth.signOut();
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  }, []);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
