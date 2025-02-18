@@ -5,7 +5,6 @@ import {
   User,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
-  signOut as firebaseSignOut,
   sendEmailVerification,
   sendPasswordResetEmail,
   onAuthStateChanged
